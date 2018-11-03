@@ -1,8 +1,94 @@
-# CarND-Controls-MPC
+# CarND-Controls-MPC (Model Predictive Control)
 Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Introduction
+
+The goal of this project is to implement a Model Predictive Controller(MPC) thatallows a simulator to be driven autonomously. This project utilizes Global Kinematic Model as the framework to determine the state of vehicle at all times. All Model parameters were tuned manually by trial and error.
+
+
+## Project Video on Youtube
+
+![Model Predictive Control Video](https://img.youtube.com/vi/vX099FpaOmM/default.jpg)
+
+
+![Video Link](https://youtu.be/vX099FpaOmM)
+
+## Kinematic Model
+
+A simplified Global Kinematic Model was utilized to predict the state of the vehicle.
+
+* Vehicle Position : (x, y)
+* Vehicle Heading: (ψ)
+* Vehicle Speed: (v)
+
+Vehicle State example: [x, y, Ψ, v]
+
+Only two actuators are necessary to control the vehicle.
+
+* Steering Wheel Angle
+Denoted by "δ", limits were set to allow for minimum angle of -25° and maximum angle of 25°
+
+* throtlling
+Denoted by "a", limits were set to allow for a maximum negative acceleration / braking of -1.0 and
+a maximum positive acceleration of 1.0
+
+
+This simplified Global Kinematic model simulates the vehicle dynamics but that does not take into account road surface such as tires, gravity, inertia, throttle response, vehicle drang coefficient, etc.
+
+
+This Simplified Kinematic Model is able to predict the vehicle's state at the next state at the next timestep based on the vehicle's current state and actuator inputs. The below diagram shows the first four equations that are used to predict the vehicle's future state. 
+
+The last two equations cross track error(cte) and error psi(epsi), were used to compute the cost of the vehicle moving away from the center of the track. As previously stated, these equations were updated at each time step in order to predict the future cte and epsi of the vehicle's current trajectory.
+
+LF is the distance from the fron tof vheicle to its center of gravity (hardcoded).
+
+![Kinematic Model Equations](MPC_equations.png)
+
+
+## Final Parameter Values:
+
+#### Time Step Length(N) and Elapsed Duration between Time Steps
+* Timestep Lenght(N) = 10
+* Elapsed Duration(dt) = 0.5
+
+Increasing timestep to more than 10 had erratic driving behavior. Elapsed duration(dt) also tends to influence the driving behavior. Tested following N & dt values N= 10, 20, 25, 8  dt = 0.1, 0.2, 0.3, 0.8
+
+
+### Polynomial Fitting with Latency
+
+The N waypoint coordinates were converted into the vehicle coordinate space with the vehicle located at the origin and a heading angle (Ψ) of 0°. This provided a clean way to orient the waypoints in relation to vehicle's state. The 3rd order polynomial was fit to the N waypoint co-ordinates to predict the future path of vehicle including the 100ms latency which was built into kinematic model in main.cpp.
+
+```cpp
+this_thread::sleep_for(chrono::milliseconds(100));
+```
+
+The latency is introduced into the project to simulate the delay of a human or automated driver and by building the latency into the model it makes for a more robust and stable model.
+
+The cost function reference and weight parameters were tuned using trial and error and final values are shown below (from MPC.h)
+
+```cpp
+#define  REF_CTE  0.0  //Cross Track Error is 0 ---> Final goal
+#define  REF_EPSI 0.0  // PSI Error reference as 0
+#define  REF_V    30.0 // Reference velocity 30
+
+//setting weight parameters for the cost function
+#define W_CTE    2.0  // Weight for cross track error
+#define W_EPSI   20.0  // Weight for PSI error
+#define W_DV     1.0   // increase to remove sharp turns at high speeds
+#define W_DELTA  1.0     // Weight for Delta steering
+#define W_A      21.0     // Weight for acceleration
+#define W_DDELTA 100.0   // Weight for delta rate. To increase to remove sharp turns
+#define W_DA     0.0   // Weight for acceleration rate. To increase to remove sudden acceleration or de-acceleration
+
+// Set lower and upper limits for variables.
+#define DED25RAD 0.436332 // 25 deg in rad, used as delta bound
+#define MAXTHR 1.0 // Maximum a value
+#define BOUND 1.0e19 // Bound value for other variables
+
+```
+---
 ## Dependencies
 
 * cmake >= 3.5
