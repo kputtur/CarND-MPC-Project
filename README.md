@@ -13,7 +13,7 @@ The goal of this project is to implement a Model Predictive Controller(MPC) that
 ![Model Predictive Control Video](https://img.youtube.com/vi/vX099FpaOmM/mqdefault.jpg)
 
 
-![Video Link](https://www.youtube.com/watch?v=vX099FpaOmM&feature=youtu.be)
+[Video Link](https://www.youtube.com/watch?v=vX099FpaOmM&feature=youtu.be)
 
 ## Kinematic Model
 
